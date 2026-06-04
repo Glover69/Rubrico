@@ -1,14 +1,5 @@
-type Capabilities = { 
-    id: string; 
-    ok: true; 
-    extensions: string[] 
-};
+import type { Capabilities, Conversion } from "./models";
 
-type Conversion = { 
-    id: string; 
-    ok: true; 
-    markdown: string 
-};
 
 const pending = new Map();
 let counter = 0;
@@ -37,7 +28,7 @@ async function readLoop() {
   }
 }
 
-function send<T>(req: any): Promise<T> {
+export function send<T>(req: any): Promise<T> {
   const id = String(++counter);
   proc.stdin.write(JSON.stringify({ ...req, id }) + "\n");
   proc.stdin.flush();
@@ -55,10 +46,15 @@ function handleLine(line: string) {
   }
 }
 
+// Exposing a shutdown function to quit in the UI
+export function shutdown(){
+    proc.kill()
+}
+
 void readLoop();
 
-const caps = await send<Capabilities>({ cmd: "capabilities" });
-console.log(caps.extensions);
+// const caps = await send<Capabilities>({ cmd: "capabilities" });
+// console.log(caps.extensions);
 
-const output = await send<Conversion>({ cmd: "convert", path: "hi.pdf" });
-console.log(output.markdown);
+// const output = await send<Conversion>({ cmd: "convert", path: "hi.pdf" });
+// console.log(output.markdown);
