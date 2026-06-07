@@ -13,6 +13,7 @@
   "dependencies": {
     "ink": "^7.0.5",
     "ink-big-text": "^2.0.0",
+    "ink-gradient": "^4.0.1",
     "react": "^19.2.7"
   }
 }

@@ -15,9 +15,9 @@ function TreeNode({ node, depth, selectedPath }: TreeNodeProps){
     <Box flexDirection="column">
 
       {
-        <Box backgroundColor={isSelected ? 'red' : ''} flexDirection="row" gap={2} paddingLeft={depth * 2}>
-        <Text>›</Text>
-        <Text>{node.name}</Text>
+        <Box backgroundColor={isSelected ? '#6AA9FF' : ''} flexDirection="row" gap={2} paddingLeft={depth * 2}>
+        <Text color={node.isDir ? "#6AA9FF" : ""}>{node.isDir ? '▸' : ''}</Text>
+        <Text color={isSelected ? "#0A0C11" : "#CED4DF"}>{node.name}</Text>
        </Box>
       
       }

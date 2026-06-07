@@ -5,8 +5,8 @@ import type { Capabilities, Conversion, Node } from "./models";
 import { readdirSync } from "node:fs";
 import path, { join } from "node:path";
 import TreeNode from "./components/treeNode";
-import BorderedLabel from "./components/borderedLabel";
 import BigText from "ink-big-text";
+import Gradient from "ink-gradient";
 
 const IGNORE = new Set([
   "node_modules",
@@ -173,7 +173,7 @@ const App = () => {
           borderStyle="bold"
           borderColor="#6AA9FF"
           paddingX={2}
-          paddingY={2}
+          paddingY={1}
           flexDirection="column"
           height="100%"
           flexGrow={1}
@@ -183,6 +183,17 @@ const App = () => {
               {" >_ Files "}
             </Text>
           </Box>
+
+          {directory.map((i) => {
+            return (
+              <TreeNode
+                key={i.path}
+                node={i}
+                depth={0}
+                selectedPath={selectedPath}
+              />
+            );
+          })}
         </Box>
 
         <Box
@@ -191,36 +202,69 @@ const App = () => {
           borderColor="#555F70"
           flexDirection="column"
           height="100%"
-          backgroundColor="#11141B"
+
           paddingX={4}
           paddingY={2}
-          flexGrow={2}
+          flexGrow={4}
+          alignItems="center"
+          justifyContent="center"
         >
-          <Box position="absolute" top={-1} paddingLeft={2} backgroundColor="">
+          <Box
+            position="absolute"
+            top={-1}
+            left={2}
+            paddingLeft={2}
+            backgroundColor=""
+          >
             <Text bold color="#555F70">
               {" Preview "}
             </Text>
           </Box>
 
-          <Text>Content side</Text>
-          {/* <BorderedLabel/> */}
+          <Box gap={0.25} alignItems="center" flexDirection="column">
+            {/* <Text color="#6AA9FF">⌁</Text> */}
+
+            <Gradient name="vice">
+              <BigText text="Rubrico"/>
+            </Gradient>
+            <Text>{directory[selectedindex]?.name}</Text>
+            <Box
+              backgroundColor="#6AA9FF"
+              paddingX={3}
+              paddingY={1}
+              gap={1}
+              justifyContent="center"
+            >
+              <Text bold color="#0A0C11">↵</Text>
+              <Text bold color="#0A0C11">Convert to Markdown</Text>
+            </Box>
+          </Box>
         </Box>
       </Box>
 
       <Box
-      flexDirection="column"
+        flexDirection="column"
         backgroundColor=""
         paddingX={4}
         paddingTop={0}
         gap={1}
         width="100%"
       >
-        <Box borderStyle="round" borderColor="#555F70" paddingX={1} flexGrow={1}>
-          <Text color="#8B94A3">~/Documents/reports/q3-financial-report.pdf</Text>
+        <Box
+          borderStyle="round"
+          borderColor="#555F70"
+          paddingX={1}
+          flexGrow={1}
+        >
+          <Text color="#8B94A3">
+            ~/Documents/reports/q3-financial-report.pdf
+          </Text>
         </Box>
 
         <Box paddingX={1} flexGrow={1}>
-          <Text color="#8B94A3">~/Documents/reports/q3-financial-report.pdf</Text>
+          <Text color="#8B94A3">
+            ~/Documents/reports/q3-financial-report.pdf
+          </Text>
         </Box>
       </Box>
     </Box>
