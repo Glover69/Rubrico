@@ -23,6 +23,7 @@ const IGNORE = new Set([
   ".cache",
   ".idea",
   ".vscode",
+  ".lock",
 ]);
 
 function initializeDirectory(cwd: string): Node[] {
@@ -88,6 +89,7 @@ const App = () => {
   });
 
   const selectedPath = flatList[selectedindex]?.path;
+ 
 
   const { exit } = useApp();
 
@@ -96,7 +98,7 @@ const App = () => {
       setSelectedIndex((prev) => Math.max(0, prev - 1));
     } else if (key.downArrow) {
       setSelectedIndex((prev) => Math.min(flatList.length - 1, prev + 1));
-    } else if (i == "c") {
+    } else if (key.return) {
       const node = flatList[selectedindex];
       if (node?.isDir) return;
 
@@ -227,7 +229,7 @@ const App = () => {
             <Gradient name="vice">
               <BigText text="Rubrico"/>
             </Gradient>
-            <Text>{directory[selectedindex]?.name}</Text>
+            <Text>{flatList[selectedindex]?.name}</Text>
             <Box
               backgroundColor="#6AA9FF"
               paddingX={3}
@@ -257,7 +259,7 @@ const App = () => {
           flexGrow={1}
         >
           <Text color="#8B94A3">
-            ~/Documents/reports/q3-financial-report.pdf
+            {flatList[selectedindex]?.path}
           </Text>
         </Box>
 
