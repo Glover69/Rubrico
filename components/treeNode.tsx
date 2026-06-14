@@ -1,15 +1,18 @@
 import { Box, Text } from "ink";
 import type { Node } from "../models";
 import path from "node:path";
+import { isSupported } from "../app";
 
 interface TreeNodeProps {
   node: Node;
   depth: number;
   selectedPath?: string;
+  supportedFiles: string[];
 }
 
-function TreeNode({ node, depth, selectedPath }: TreeNodeProps) {
+function TreeNode({ node, depth, selectedPath, supportedFiles }: TreeNodeProps) {
   const isSelected = node.path === selectedPath;
+  const isSupportedBool = (!node.isDir && isSupported(node, supportedFiles))
 
   return (
     <Box flexDirection="column">
@@ -19,7 +22,8 @@ function TreeNode({ node, depth, selectedPath }: TreeNodeProps) {
           flexDirection="row"
           justifyContent="space-between"
           gap={2}
-          paddingLeft={depth * 2}>
+          paddingLeft={depth * 2}
+         paddingRight={0.5}>
           <Box gap={1}>
             <Text color={node.isDir ? "#6AA9FF" : ""}>
               {node.isDir ? ">" : ""}
@@ -28,7 +32,7 @@ function TreeNode({ node, depth, selectedPath }: TreeNodeProps) {
           </Box>
           
 
-          <Text dimColor color={isSelected ? "#0A0C11" : "#CED4DF"}>{path.extname(node.path).slice(1)}</Text>
+          <Text dimColor color={isSupportedBool ? "#CED4DF" : "red"}>{isSupportedBool ? (path.extname(node.path).slice(1)) : "×"}</Text>
         </Box>
       }
 
@@ -39,6 +43,7 @@ function TreeNode({ node, depth, selectedPath }: TreeNodeProps) {
             node={child}
             depth={depth + 1}
             selectedPath={selectedPath}
+            supportedFiles={supportedFiles}
           />
         ))}
     </Box>

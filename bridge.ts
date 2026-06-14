@@ -11,8 +11,9 @@ const proc = Bun.spawn([".venv/bin/python", "engine.py"], {
   cwd: "engine",
 });
 
-proc.stdin.write('{"id":"1","cmd":"capabilities"}\n');
-proc.stdin.flush();
+
+// proc.stdin.write('{"id":"1","cmd":"capabilities"}\n');
+// proc.stdin.flush();
 
 let buffer = "";
 

@@ -7,6 +7,7 @@ import path, { join } from "node:path";
 import TreeNode from "./components/treeNode";
 import BigText from "ink-big-text";
 import Gradient from "ink-gradient";
+import { stderr } from "bun";
 
 const IGNORE = new Set([
   "node_modules",
@@ -22,8 +23,7 @@ const IGNORE = new Set([
   ".next",
   ".cache",
   ".idea",
-  ".vscode",
-  ".lock",
+  ".vscode"
 ]);
 
 function initializeDirectory(cwd: string): Node[] {
@@ -69,7 +69,7 @@ function flattenDirectoryTree(n: Node[]): Node[] {
   return finalList;
 }
 
-function isSupported(n: Node | undefined, supported: string[]): boolean {
+export function isSupported(n: Node | undefined, supported: string[]): boolean {
   if (!n) return false;
   const ext = path.extname(n.path).slice(1).toLowerCase();
   return supported.includes(ext);
@@ -98,14 +98,14 @@ const App = () => {
       setSelectedIndex((prev) => Math.max(0, prev - 1));
     } else if (key.downArrow) {
       setSelectedIndex((prev) => Math.min(flatList.length - 1, prev + 1));
-    } else if (key.return) {
+    } else if (i == 'c') {
       const node = flatList[selectedindex];
       if (node?.isDir) return;
 
       if (!isSupported(node, supportedFiles)) return;
-      send<Conversion>({ cmd: "convert", path: node?.path }).then((r) =>
-        setMarkdown(r.markdown),
-      );
+      send<Conversion>({ cmd: "convert", path: node?.path }).then((r) => {
+       setMarkdown(r.markdown) 
+      });
     } else if (i == "q") {
       shutdown();
       exit();
@@ -113,9 +113,11 @@ const App = () => {
   });
 
   useEffect(() => {
-    send<Capabilities>({ cmd: "capabilities" }).then((r) =>
-      setSupportedFiles(r.extensions),
-    );
+    send<Capabilities>({ cmd: "capabilities" }).then((r) => {
+      setSupportedFiles(r.extensions)
+    });
+
+    
   }, []);
 
   return (
@@ -193,6 +195,7 @@ const App = () => {
                 node={i}
                 depth={0}
                 selectedPath={selectedPath}
+                supportedFiles={supportedFiles}
               />
             );
           })}
@@ -223,7 +226,7 @@ const App = () => {
             </Text>
           </Box>
 
-          <Box gap={0.25} alignItems="center" flexDirection="column">
+          { markdown ? <Text>{markdown}</Text> : <Box gap={0.25} alignItems="center" flexDirection="column">
             {/* <Text color="#6AA9FF">⌁</Text> */}
 
             <Gradient name="vice">
@@ -240,7 +243,8 @@ const App = () => {
               <Text bold color="#0A0C11">↵</Text>
               <Text bold color="#0A0C11">Convert to Markdown</Text>
             </Box>
-          </Box>
+          </Box>}
+          
         </Box>
       </Box>
 

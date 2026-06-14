@@ -51,4 +51,4 @@ for line in sys.stdin:
         continue
 
     resp = handle(req)
-    # print(json.dumps(resp), flush=True)
+    print(json.dumps(resp), flush=True)
