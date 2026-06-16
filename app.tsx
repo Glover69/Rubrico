@@ -7,7 +7,10 @@ import path, { join } from "node:path";
 import TreeNode from "./components/treeNode";
 import BigText from "ink-big-text";
 import Gradient from "ink-gradient";
-import { stderr } from "bun";
+import { marked } from "marked"
+import TerminalRenderer from "marked-terminal"
+import { markedTerminal } from 'marked-terminal';
+
 
 const IGNORE = new Set([
   "node_modules",
@@ -23,7 +26,7 @@ const IGNORE = new Set([
   ".next",
   ".cache",
   ".idea",
-  ".vscode"
+  ".vscode",
 ]);
 
 function initializeDirectory(cwd: string): Node[] {
@@ -79,6 +82,7 @@ const App = () => {
   const [supportedFiles, setSupportedFiles] = useState<string[]>([]);
   const [markdown, setMarkdown] = useState("");
   const [selectedindex, setSelectedIndex] = useState(0);
+  const [scrollOffset, setScrollOffset] = useState(0);
 
   const [directory, setDrectory] = useState(() => {
     return initializeDirectory(process.cwd());
@@ -88,24 +92,39 @@ const App = () => {
     return flattenDirectoryTree(directory);
   });
 
+  const visibleHeight = process.stdout.rows - 20;
+
   const selectedPath = flatList[selectedindex]?.path;
- 
+  
+  marked.setOptions({ renderer: new TerminalRenderer() as any })
+  const formatted = marked(markdown) as string
+  
+  const lines = formatted.split("\n");
+  const visible = lines.slice(scrollOffset, scrollOffset + visibleHeight).join("\n");
 
   const { exit } = useApp();
 
   useInput((i, key) => {
-    if (key.upArrow) {
-      setSelectedIndex((prev) => Math.max(0, prev - 1));
-    } else if (key.downArrow) {
-      setSelectedIndex((prev) => Math.min(flatList.length - 1, prev + 1));
-    } else if (i == 'c') {
+    if (i == "c") {
       const node = flatList[selectedindex];
       if (node?.isDir) return;
 
       if (!isSupported(node, supportedFiles)) return;
       send<Conversion>({ cmd: "convert", path: node?.path }).then((r) => {
-       setMarkdown(r.markdown) 
+        setMarkdown(r.markdown);
       });
+    } else if (i == 'w') {
+      if (scrollOffset > 0) {
+        setScrollOffset(Math.max(0, scrollOffset - 1));
+      }
+    } else if (i == 's') {
+      if (scrollOffset < lines.length - visibleHeight) {
+        setScrollOffset(scrollOffset + 2)
+      }
+    } else if (key.upArrow) {
+      setSelectedIndex((prev) => Math.max(0, prev - 1));
+    } else if (key.downArrow) {
+      setSelectedIndex((prev) => Math.min(flatList.length - 1, prev + 1));
     } else if (i == "q") {
       shutdown();
       exit();
@@ -114,10 +133,8 @@ const App = () => {
 
   useEffect(() => {
     send<Capabilities>({ cmd: "capabilities" }).then((r) => {
-      setSupportedFiles(r.extensions)
+      setSupportedFiles(r.extensions);
     });
-
-    
   }, []);
 
   return (
@@ -125,7 +142,8 @@ const App = () => {
       backgroundColor=""
       width="100%"
       flexDirection="column"
-      height="100%"
+      height={process.stdout.rows}
+      overflow="hidden"
       flexGrow={1}
     >
       <Box
@@ -180,6 +198,7 @@ const App = () => {
           paddingY={1}
           flexDirection="column"
           height="100%"
+          flexShrink={0}
           flexGrow={1}
         >
           <Box position="absolute" top={-1} paddingLeft={2} backgroundColor="">
@@ -206,13 +225,15 @@ const App = () => {
           borderStyle="bold"
           borderColor="#555F70"
           flexDirection="column"
-          height="100%"
-
+          height={process.stdout.rows - 14}
           paddingX={4}
           paddingY={2}
-          flexGrow={4}
+          width="100%"
+          flexGrow={1}
           alignItems="center"
           justifyContent="center"
+          overflow="hidden"
+          
         >
           <Box
             position="absolute"
@@ -226,25 +247,32 @@ const App = () => {
             </Text>
           </Box>
 
-          { markdown ? <Text>{markdown}</Text> : <Box gap={0.25} alignItems="center" flexDirection="column">
-            {/* <Text color="#6AA9FF">⌁</Text> */}
+          {markdown ? (
+            <Text>{visible}</Text>
+          ) : (
+            <Box gap={0.25} alignItems="center" flexDirection="column">
+              {/* <Text color="#6AA9FF">⌁</Text> */}
 
-            <Gradient name="vice">
-              <BigText text="Rubrico"/>
-            </Gradient>
-            <Text>{flatList[selectedindex]?.name}</Text>
-            <Box
-              backgroundColor="#6AA9FF"
-              paddingX={3}
-              paddingY={1}
-              gap={1}
-              justifyContent="center"
-            >
-              <Text bold color="#0A0C11">↵</Text>
-              <Text bold color="#0A0C11">Convert to Markdown</Text>
+              <Gradient name="vice">
+                <BigText text="Rubrico" />
+              </Gradient>
+              <Text>{flatList[selectedindex]?.name}</Text>
+              <Box
+                backgroundColor="#6AA9FF"
+                paddingX={3}
+                paddingY={1}
+                gap={1}
+                justifyContent="center"
+              >
+                <Text bold color="#0A0C11">
+                  ↵
+                </Text>
+                <Text bold color="#0A0C11">
+                  Convert to Markdown
+                </Text>
+              </Box>
             </Box>
-          </Box>}
-          
+          )}
         </Box>
       </Box>
 
@@ -262,9 +290,7 @@ const App = () => {
           paddingX={1}
           flexGrow={1}
         >
-          <Text color="#8B94A3">
-            {flatList[selectedindex]?.path}
-          </Text>
+          <Text color="#8B94A3">{flatList[selectedindex]?.path}</Text>
         </Box>
 
         <Box paddingX={1} flexGrow={1}>
